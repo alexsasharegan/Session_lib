@@ -1,8 +1,8 @@
 {
-    "name": "alexsasharegan/ldap",
+    "name": "alexsasharegan/session",
     "type": "library",
-    "description": "LDAP utilities",
-    "keywords": ["ldap"],
+    "description": "Session utilities",
+    "keywords": ["session"],
     "homepage": "",
     "license": "MIT",
     "authors": [
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4" : {
-            "Ldap\\" : "src/"
+            "Session\\" : "src/"
         }
     }
 }
