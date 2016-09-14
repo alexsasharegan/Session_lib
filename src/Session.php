@@ -39,6 +39,13 @@ class Session {
 	}
 	
 	/**
+	 * Close session on object destruction
+	 */
+	public function __destruct() {
+		$this->close();
+	}
+	
+	/**
 	 * Push one or more elements onto the end of the session array
 	 * @param $data
 	 * @return int
