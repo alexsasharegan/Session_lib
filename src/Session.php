@@ -147,6 +147,17 @@ class Session {
 	}
 	
 	/**
+	 * Update the current session id with a newly generated one
+	 * @param bool $deleteOldSession
+	 * @return bool
+	 */
+	public function regenerateId( $deleteOldSession = false ) {
+		if ( $this->isSessionActive() ) {
+			return session_regenerate_id( $deleteOldSession );
+		}
+	}
+	
+	/**
 	 * Resets a session with original values stored in session storage. This function requires an active session and discards changes in $_SESSION.
 	 * @return $this
 	 */
