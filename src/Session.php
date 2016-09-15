@@ -11,7 +11,7 @@ class Session {
 	/**
 	 * @var string
 	 */
-	private $sessionId = 'PHPSESSID';
+	private $sessionId;
 	
 	/**
 	 * Returns whether or not the session is active
@@ -30,12 +30,21 @@ class Session {
 	
 	/**
 	 * Session constructor.
+	 * @param null $sessionId
 	 * @param bool $regenerateSessionId
 	 */
-	public function __construct( $regenerateSessionId = false ) {
-		session_start();
-		session_regenerate_id( $regenerateSessionId );
-		$this->setSessionActive( true );
+	public function __construct( $sessionId = null, $regenerateSessionId = false ) {
+		if ( !is_null( $sessionId ) ) {
+			$this->setSessionId( $sessionId );
+		} else {
+			$this->getSessionId();
+		}
+		
+		$this->setSessionActive( session_start() );
+		
+		if ( $regenerateSessionId ) {
+			session_regenerate_id( true );
+		}
 	}
 	
 	/**
@@ -146,11 +155,9 @@ class Session {
 	 * @return string
 	 */
 	public function setSessionId( $sessionId ) {
-		if ( $this->isSessionActive() ) {
-			$this->sessionId = $sessionId;
-			
-			return session_id( $sessionId );
-		}
+		$this->sessionId = $sessionId;
+		
+		return session_id( $sessionId );
 	}
 	
 	/**
@@ -220,7 +227,7 @@ class Session {
 	 */
 	public function destroy() {
 		if ( $this->isSessionActive() ) {
-			setcookie( $this->sessionId );
+			setcookie( 'PHPSESSID' );
 			
 			return session_destroy();
 		}
