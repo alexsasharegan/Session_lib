@@ -72,7 +72,7 @@ class Session {
 		$this->setSessionStatus( session_start() );
 		$this->getSessionId();
 		
-		if ( $regenerateSessionId ) session_regenerate_id( TRUE );
+		if ( $regenerateSessionId ) $this->regenerateId( TRUE );
 	}
 	
 	/**
@@ -192,12 +192,9 @@ class Session {
 	public function at( $index = 0 )
 	{
 		$this->verifySession();
-		if ( gettype( $index ) !== 'integer' )
-		{
-			return $_SESSION;
-		}
+		settype( $index, 'integer' );
 		
-		return $_SESSION[ $index ];
+		return isset( $_SESSION[ $index ] ) ? $_SESSION[ $index ] : NULL;
 	}
 	
 	/**
@@ -377,6 +374,7 @@ class Session {
 	}
 	
 	/**
+	 * @param null $sessionName
 	 * @param null $sessionId
 	 * @param bool $regenerateSessionId
 	 *
