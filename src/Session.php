@@ -376,4 +376,15 @@ class Session {
 		return session_status();
 	}
 	
+	/**
+	 * @param null $sessionId
+	 * @param bool $regenerateSessionId
+	 *
+	 * @return static
+	 */
+	public static function newSession( $sessionId = NULL, $regenerateSessionId = FALSE )
+	{
+		return new static( $sessionId, $regenerateSessionId );
+	}
+	
 }
