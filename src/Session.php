@@ -7,154 +7,220 @@ class Session {
 	/**
 	 * @var bool
 	 */
-	private $sessionActive = false;
+	protected $sessionIsActive = FALSE;
 	/**
 	 * @var string
 	 */
-	private $sessionId;
+	protected $sessionId;
+	
+	/**
+	 * @param mixed $sessionName
+	 *
+	 * @return Session
+	 */
+	public function setSessionName( $sessionName )
+	{
+		session_name( $sessionName );
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getSessionName()
+	{
+		return session_name();
+	}
 	
 	/**
 	 * Returns whether or not the session is active
 	 * @return boolean
 	 */
-	public function isSessionActive() {
-		return $this->sessionActive;
+	public function isSessionActive()
+	{
+		return $this->sessionIsActive;
 	}
 	
 	/**
 	 * @param boolean $sessionState
 	 */
-	private function setSessionActive( $sessionState ) {
-		$this->sessionActive = $sessionState;
+	protected function setSessionStatus( $sessionState )
+	{
+		$this->sessionIsActive = (boolean) $sessionState;
 	}
 	
 	/**
 	 * Session constructor.
+	 *
 	 * @param null $sessionId
 	 * @param bool $regenerateSessionId
 	 */
-	public function __construct( $sessionId = null, $regenerateSessionId = false ) {
-		if ( !is_null( $sessionId ) ) {
+	public function __construct( $sessionId = NULL, $regenerateSessionId = FALSE )
+	{
+		if ( ! is_null( $sessionId ) )
+		{
 			$this->setSessionId( $sessionId );
-		} else {
+		}
+		else
+		{
 			$this->getSessionId();
 		}
 		
-		$this->setSessionActive( session_start() );
+		$this->setSessionStatus( session_start() );
 		
-		if ( $regenerateSessionId ) {
-			session_regenerate_id( true );
+		if ( $regenerateSessionId )
+		{
+			session_regenerate_id( TRUE );
 		}
 	}
 	
 	/**
 	 * Close session on object destruction
 	 */
-	public function __destruct() {
+	public function __destruct()
+	{
 		$this->close();
+	}
+	
+	protected function verifySession()
+	{
+		if ( ! $this->isSessionActive() ) throw new \Exception( "Session not started; cannot perform session methods." );
 	}
 	
 	/**
 	 * Push one or more elements onto the end of the session array
+	 *
 	 * @param $data
+	 *
 	 * @return int
 	 */
-	public function push( $data ) {
-		if ( $this->isSessionActive() ) {
-			return array_push( $_SESSION, $data );
-		}
+	public function push( $data )
+	{
+		$this->verifySession();
+		
+		return array_push( $_SESSION, $data );
 	}
 	
 	/**
 	 * Pop the element off the end of the session array
 	 * @return mixed
 	 */
-	public function pop() {
-		if ( $this->isSessionActive() ) {
-			return array_pop( $_SESSION );
-		}
+	public function pop()
+	{
+		$this->verifySession();
+		
+		return array_pop( $_SESSION );
 	}
 	
 	/**
 	 * @param $data
+	 *
 	 * @return int
 	 */
-	public function unshift( $data ) {
-		if ( $this->isSessionActive() ) {
-			return array_unshift( $_SESSION, $data );
-		}
+	public function unshift( $data )
+	{
+		$this->verifySession();
+		
+		return array_unshift( $_SESSION, $data );
 	}
 	
 	/**
 	 * Prepend one or more elements to the beginning of the session array
 	 * @return mixed
 	 */
-	public function shift() {
+	public function shift()
+	{
+		$this->verifySession();
+		
 		return array_shift( $_SESSION );
 	}
 	
 	/**
 	 * Set a key => value pair on the session array
+	 *
 	 * @param $key
 	 * @param $value
+	 *
 	 * @return $this
 	 */
-	public function set( $key, $value ) {
-		if ( $this->isSessionActive() ) {
-			$_SESSION[ $key ] = $value;
-			
-			return $this;
-		}
+	public function set( $key, $value )
+	{
+		$this->verifySession();
+		$_SESSION[ $key ] = $value;
+		
+		return $this;
 	}
 	
 	/**
 	 * Get a value from the session array by a given key
+	 *
 	 * @param string $key
+	 *
 	 * @return mixed
 	 */
-	public function get( $key = '' ) {
-		if ( $this->isSessionActive() ) {
-			if ( empty($key) || gettype( $key ) !== 'string' ) {
-				return $_SESSION;
-			}
-			
-			return $_SESSION[ $key ];
+	public function get( $key = '' )
+	{
+		$this->verifySession();
+		if ( empty( $key ) || gettype( $key ) !== 'string' )
+		{
+			return $_SESSION;
 		}
+		
+		return $_SESSION[ $key ];
+	}
+	
+	/**
+	 * Returns the session array.
+	 *
+	 * @return mixed
+	 */
+	public function getAll()
+	{
+		$this->verifySession();
+		
+		return $_SESSION;
 	}
 	
 	/**
 	 * Get a value from the session array by a numeric index
+	 *
 	 * @param int $index
+	 *
 	 * @return mixed
 	 */
-	public function at( $index = 0 ) {
-		if ( $this->isSessionActive() ) {
-			if ( gettype( $index ) !== 'integer' ) {
-				return $_SESSION;
-			}
-			
-			return $_SESSION[ $index ];
+	public function at( $index = 0 )
+	{
+		$this->verifySession();
+		if ( gettype( $index ) !== 'integer' )
+		{
+			return $_SESSION;
 		}
+		
+		return $_SESSION[ $index ];
 	}
 	
 	/**
 	 * Get the current session session id
 	 * @return string
 	 */
-	public function getSessionId() {
-		if ( $this->isSessionActive() ) {
-			$this->sessionId = session_id();
-			
-			return $this->sessionId;
-		}
+	public function getSessionId()
+	{
+		$this->verifySession();
+		$this->sessionId = session_id();
+		
+		return $this->sessionId;
 	}
 	
 	/**
 	 * Set the current session id
+	 *
 	 * @param $sessionId
+	 *
 	 * @return string
 	 */
-	public function setSessionId( $sessionId ) {
+	public function setSessionId( $sessionId )
+	{
 		$this->sessionId = $sessionId;
 		
 		return session_id( $sessionId );
@@ -162,39 +228,43 @@ class Session {
 	
 	/**
 	 * Update the current session id with a newly generated one
+	 *
 	 * @param bool $deleteOldSession
+	 *
 	 * @return bool
 	 */
-	public function regenerateId( $deleteOldSession = false ) {
-		if ( $this->isSessionActive() ) {
-			return session_regenerate_id( $deleteOldSession );
-		}
+	public function regenerateId( $deleteOldSession = FALSE )
+	{
+		$this->verifySession();
+		
+		return session_regenerate_id( $deleteOldSession );
 	}
 	
 	/**
-	 * Resets a session with original values stored in session storage. This function requires an active session and discards changes in $_SESSION.
+	 * Resets a session with original values stored in session storage. This function requires an active session and
+	 * discards changes in $_SESSION.
 	 * @return $this
 	 */
-	public function reset() {
-		if ( $this->isSessionActive() ) {
-			session_reset();
-		}
+	public function reset()
+	{
+		$this->verifySession();
+		session_reset();
 		
 		return $this;
 	}
 	
 	/**
 	 * Free (unset) all session variables up for garbage collection, and [optionally] set new data
+	 *
 	 * @param array $data
+	 *
 	 * @return $this
 	 */
-	public function initialize( $data = [] ) {
-		if ( $this->isSessionActive() ) {
-			session_unset();
-			if ( is_array( $data ) ) {
-				$_SESSION = $data;
-			}
-		}
+	public function initialize( array $data = [] )
+	{
+		$this->verifySession();
+		session_unset();
+		$_SESSION = $data;
 		
 		return $this;
 	}
@@ -203,44 +273,94 @@ class Session {
 	 * Delete all session variables
 	 * @return $this
 	 */
-	public function delete() {
-		if ( $this->isSessionActive() ) {
-			session_unset();
-		}
+	public function delete()
+	{
+		$this->verifySession();
+		session_unset();
 		
 		return $this;
 	}
 	
 	/**
 	 * Remove a session variable at a given key/index
+	 *
 	 * @param $key
+	 *
+	 * @return $this
 	 */
-	public function remove( $key ) {
-		if ( $this->isSessionActive() && isset($_SESSION[ $key ]) ) {
-			unset($_SESSION[ $key ]);
-		}
+	public function remove( $key )
+	{
+		$this->verifySession();
+		unset( $_SESSION[ $key ] );
+		
+		return $this;
 	}
 	
 	/**
 	 * Destroy the current session and empty the client session cookie
 	 * @return bool
 	 */
-	public function destroy() {
-		if ( $this->isSessionActive() ) {
-			setcookie( 'PHPSESSID' );
-			
-			return session_destroy();
-		}
+	public function destroy()
+	{
+		$this->verifySession();
+		setcookie( $this->getSessionName() );
+		
+		return session_destroy();
+	}
+	
+	/**
+	 * Takes an array of cookie options:
+	 * [
+	 *  'name'     => $this->getSessionName(),
+	 *  'value'    => NULL,
+	 *  'expire'   => NULL,
+	 *  'path'     => NULL,
+	 *  'domain'   => NULL,
+	 *  'secure'   => NULL,
+	 *  'httpOnly' => NULL,
+	 * ]
+	 *
+	 * @param array $options
+	 *
+	 * @return bool
+	 */
+	public function setCookie( array $options = [] )
+	{
+		$this->verifySession();
+		
+		$defaults = [
+			'name'     => $this->getSessionName(),
+			'value'    => NULL,
+			'expire'   => NULL,
+			'path'     => NULL,
+			'domain'   => NULL,
+			'secure'   => NULL,
+			'httpOnly' => NULL,
+		];
+		
+		$options = array_merge( $defaults, $options );
+		
+		return setcookie(
+			$options['name'],
+			$options['value'],
+			$options['expire'],
+			$options['path'],
+			$options['domain'],
+			$options['secure'],
+			$options['httpOnly']
+		);
 	}
 	
 	/**
 	 * Save the current session variables and close the session
 	 */
-	public function close() {
-		if ( $this->isSessionActive() ) {
-			session_write_close();
-			$this->setSessionActive( false );
-		}
+	public function close()
+	{
+		$this->verifySession();
+		session_write_close();
+		$this->setSessionStatus( FALSE );
+		
+		return $this;
 	}
 	
 	/**
@@ -249,10 +369,11 @@ class Session {
 	 * PHP_SESSION_ACTIVE if sessions are enabled, and one exists.
 	 * @return int
 	 */
-	public function getStatus() {
-		if ( $this->isSessionActive() ) {
-			return session_status();
-		}
+	public function getStatus()
+	{
+		$this->verifySession();
+		
+		return session_status();
 	}
 	
 }
