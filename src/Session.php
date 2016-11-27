@@ -382,9 +382,9 @@ class Session {
 	 *
 	 * @return static
 	 */
-	public static function newSession( $sessionId = NULL, $regenerateSessionId = FALSE )
+	public static function newSession( $sessionName = NULL, $sessionId = NULL, $regenerateSessionId = FALSE )
 	{
-		return new static( $sessionId, $regenerateSessionId );
+		return new static( $sessionName, $sessionId, $regenerateSessionId );
 	}
 	
 	/**
