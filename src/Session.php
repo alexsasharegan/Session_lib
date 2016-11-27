@@ -13,6 +13,8 @@ class Session {
 	 */
 	protected $sessionId;
 	
+	protected $previousSessionName = NULL;
+	
 	/**
 	 * @param mixed $sessionName
 	 *
@@ -20,7 +22,7 @@ class Session {
 	 */
 	public function setSessionName( $sessionName )
 	{
-		session_name( $sessionName );
+		$this->previousSessionName = session_name( $sessionName );
 		
 		return $this;
 	}
@@ -53,26 +55,24 @@ class Session {
 	/**
 	 * Session constructor.
 	 *
+	 * @param null $sessionName
 	 * @param null $sessionId
 	 * @param bool $regenerateSessionId
 	 */
-	public function __construct( $sessionId = NULL, $regenerateSessionId = FALSE )
+	public function __construct( $sessionName = NULL, $sessionId = NULL, $regenerateSessionId = FALSE )
 	{
-		if ( ! is_null( $sessionId ) )
-		{
-			$this->setSessionId( $sessionId );
-		}
-		else
-		{
-			$this->getSessionId();
-		}
+		// In order to set a session name other than the default,
+		// this must be called before session_start
+		if ( ! is_null( $sessionName ) ) $this->setSessionName( $sessionName );
+		
+		// In order to set a session id other than the default,
+		// this must be called before session_start
+		if ( ! is_null( $sessionId ) ) $this->setSessionId( $sessionId );
 		
 		$this->setSessionStatus( session_start() );
+		$this->getSessionId();
 		
-		if ( $regenerateSessionId )
-		{
-			session_regenerate_id( TRUE );
-		}
+		if ( $regenerateSessionId ) session_regenerate_id( TRUE );
 	}
 	
 	/**
@@ -385,6 +385,14 @@ class Session {
 	public static function newSession( $sessionId = NULL, $regenerateSessionId = FALSE )
 	{
 		return new static( $sessionId, $regenerateSessionId );
+	}
+	
+	/**
+	 * @return null|string
+	 */
+	public function getPreviousSessionName()
+	{
+		return $this->previousSessionName;
 	}
 	
 }
