@@ -2,7 +2,7 @@
 
 namespace Session;
 
-class Session {
+class Session implements \JsonSerializable {
 	
 	/**
 	 * @var bool
@@ -393,4 +393,34 @@ class Session {
 		return $this->previousSessionName;
 	}
 	
+	/**
+	 * Specify data which should be serialized to JSON
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize()
+	{
+		return array_merge( $_SESSION, [
+			'sessionId'   => $this->getSessionId(),
+			'sessionName' => $this->getSessionName(),
+		] );
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function toArray()
+	{
+		return $this->jsonSerialize();
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return json_encode( $this );
+	}
 }
