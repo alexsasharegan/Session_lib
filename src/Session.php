@@ -162,12 +162,13 @@ class Session implements \JsonSerializable {
 	public function get( $key = '' )
 	{
 		$this->verifySession();
+		
 		if ( empty( $key ) || gettype( $key ) !== 'string' )
 		{
 			return $_SESSION;
 		}
 		
-		return $_SESSION[ $key ];
+		return isset( $_SESSION[ $key ] ) ? $_SESSION[ $key ] : NULL;
 	}
 	
 	/**
