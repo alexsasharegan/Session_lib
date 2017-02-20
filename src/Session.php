@@ -13,6 +13,8 @@ class Session implements \JsonSerializable {
 	const SIX_MONTHS  = self::ONE_YEAR / 2;
 	const ONE_QUARTER = self::ONE_YEAR * .25;
 	
+	protected static $sessionName = NULL;
+	
 	/**
 	 * @var bool
 	 */
@@ -507,15 +509,30 @@ class Session implements \JsonSerializable {
 	}
 	
 	/**
-	 * @param null $sessionName
 	 * @param null $sessionId
 	 * @param bool $regenerateSessionId
 	 *
 	 * @return static
 	 */
-	public static function newSession( $sessionName = NULL, $sessionId = NULL, $regenerateSessionId = FALSE )
+	public static function newSession( $sessionId = NULL, $regenerateSessionId = FALSE )
 	{
-		return new static( $sessionName, $sessionId, $regenerateSessionId );
+		return new static( self::$sessionName, $sessionId, $regenerateSessionId );
+	}
+	
+	/**
+	 * @param string $name
+	 */
+	public static function setGlobalSessionName( $name = 'PHPSESSID' )
+	{
+		self::$sessionName = $name;
+	}
+	
+	/**
+	 * @return string|null
+	 */
+	public static function getGlobalSessionName()
+	{
+		return self::$sessionName;
 	}
 	
 	/**
