@@ -4,6 +4,15 @@ namespace Session;
 
 class Session implements \JsonSerializable {
 	
+	const ONE_MINUTE  = 60;
+	const ONE_HOUR    = self::ONE_MINUTE * 60;
+	const ONE_DAY     = self::ONE_HOUR * 24;
+	const ONE_WEEK    = self::ONE_DAY * 7;
+	const ONE_MONTH   = self::ONE_MONTH * 30;
+	const ONE_YEAR    = self::ONE_DAY * 365;
+	const SIX_MONTHS  = self::ONE_YEAR / 2;
+	const ONE_QUARTER = self::ONE_YEAR * .25;
+	
 	/**
 	 * @var bool
 	 */
@@ -45,11 +54,11 @@ class Session implements \JsonSerializable {
 	}
 	
 	/**
-	 * @param boolean $sessionState
+	 * @param boolean $sessionIsActive
 	 */
-	protected function setSessionStatus( $sessionState )
+	protected function setSessionStatus( $sessionIsActive )
 	{
-		$this->sessionIsActive = (boolean) $sessionState;
+		$this->sessionIsActive = (boolean) $sessionIsActive;
 	}
 	
 	/**
@@ -67,12 +76,18 @@ class Session implements \JsonSerializable {
 		
 		// In order to set a session id other than the default,
 		// this must be called before session_start
-		if ( ! is_null( $sessionId ) ) $this->setSessionId( $sessionId );
+		$this->initSessionId( $sessionId );
 		
-		$this->setSessionStatus( session_start() );
-		$this->getSessionId();
+		$this->startSession();
 		
 		if ( $regenerateSessionId ) $this->regenerateId( TRUE );
+	}
+	
+	protected function startSession()
+	{
+		$this->setSessionStatus( session_start() );
+		
+		return $this;
 	}
 	
 	/**
@@ -196,6 +211,18 @@ class Session implements \JsonSerializable {
 		settype( $index, 'integer' );
 		
 		return isset( $_SESSION[ $index ] ) ? $_SESSION[ $index ] : NULL;
+	}
+	
+	/**
+	 * @param null $sessionId
+	 *
+	 * @return string
+	 */
+	protected function initSessionId( $sessionId = NULL )
+	{
+		$this->sessionId = is_null( $sessionId ) ? session_id() : $this->setSessionId( $sessionId );
+		
+		return $this->sessionId;
 	}
 	
 	/**
@@ -333,7 +360,7 @@ class Session implements \JsonSerializable {
 			'path'     => NULL,
 			'domain'   => NULL,
 			'secure'   => NULL,
-			'httpOnly' => NULL,
+			'httponly' => NULL,
 		];
 		
 		$options = array_merge( $defaults, $options );
@@ -345,8 +372,113 @@ class Session implements \JsonSerializable {
 			$options['path'],
 			$options['domain'],
 			$options['secure'],
-			$options['httpOnly']
+			$options['httponly']
 		);
+	}
+	
+	/**
+	 * <h1>$params['lifetime']</h1>
+	 * <p>Lifetime of the session cookie, defined in seconds.</p>
+	 * <h1>$params['path']</h1>
+	 * <p>Path on the domain where the cookie will work. Use a single slash ('/') for all paths on the domain.</p>
+	 * <h1>$params['domain']</h1>
+	 * <p>Cookie domain, for example 'www.php.net'. To make cookies visible on all subdomains then the domain must be
+	 * prefixed with a dot like '.php.net'.</p>
+	 * <h1>$params['secure']</h1>
+	 * <p>If TRUE cookie will only be sent over secure connections.</p>
+	 * <h1>$params['httponly']</h1>
+	 * <p>If set to TRUE then PHP will attempt to send the httponly flag when setting the session cookie.</p>
+	 *
+	 * @param array $params
+	 *
+	 * @return void
+	 */
+	public static function setCookieParams( array $params )
+	{
+		$options = array_merge( self::getCookieParams(), $params );
+		
+		session_set_cookie_params(
+			$options['lifetime'],
+			$options['path'],
+			$options['domain'],
+			$options['secure'],
+			$options['httponly']
+		);
+	}
+	
+	/**
+	 * session.cookie_lifetime specifies the lifetime of the cookie in seconds which is sent to the browser.
+	 * The value 0 means "until the browser is closed." Defaults to 0.
+	 *
+	 * @param int $lifetime
+	 */
+	public static function setCookieLifetime( $lifetime = 0 )
+	{
+		self::setCookieParams( compact( 'lifetime' ) );
+	}
+	
+	/**
+	 * session.cookie_path specifies path to set in the session cookie. Defaults to /.
+	 *
+	 * @param string $path
+	 */
+	public static function setCookiePath( $path = '/' )
+	{
+		self::setCookieParams( compact( 'path' ) );
+	}
+	
+	/**
+	 * session.cookie_domain specifies the domain to set in the session cookie.
+	 * Default is none at all meaning the host name of the server which generated the cookie according to cookies
+	 * specification.
+	 * To make cookies visible on all subdomains then the domain must be
+	 * prefixed with a dot like '.php.net'.
+	 *
+	 * @param $domain
+	 */
+	public static function setCookieDomain( $domain )
+	{
+		self::setCookieParams( compact( 'domain' ) );
+	}
+	
+	/**
+	 * session.cookie_secure specifies whether cookies should only be sent over secure connections.
+	 * Defaults to off.
+	 * This setting was added in PHP 4.0.4.
+	 *
+	 * @param $secure
+	 */
+	public static function setCookieSecure( $secure )
+	{
+		self::setCookieParams( compact( 'secure' ) );
+	}
+	
+	/**
+	 * Marks the cookie as accessible only through the HTTP protocol.
+	 * This means that the cookie won't be accessible by scripting languages, such as JavaScript.
+	 * This setting can effectively help to reduce identity theft through XSS attacks (although it is not supported by
+	 * all browsers).
+	 *
+	 * @param $httponly
+	 */
+	public static function setCookieHttpOnly( $httponly )
+	{
+		self::setCookieParams( compact( 'httponly' ) );
+	}
+	
+	/**
+	 * an array with the current session cookie information,
+	 * the array contains the following items:
+	 * "lifetime" - The lifetime of the cookie in seconds.
+	 * "path" - The path where information is stored.
+	 * "domain" - The domain of the cookie.
+	 * "secure" - The cookie should only be sent over secure connections.
+	 * "httponly" - The cookie can only be accessed through the HTTP protocol.
+	 * @return array
+	 */
+	public static function getCookieParams()
+	{
+		return session_get_cookie_params();
 	}
 	
 	/**
