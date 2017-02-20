@@ -8,7 +8,7 @@ class Session implements \JsonSerializable {
 	const ONE_HOUR    = self::ONE_MINUTE * 60;
 	const ONE_DAY     = self::ONE_HOUR * 24;
 	const ONE_WEEK    = self::ONE_DAY * 7;
-	const ONE_MONTH   = self::ONE_MONTH * 30;
+	const ONE_MONTH   = self::ONE_DAY * 30;
 	const ONE_YEAR    = self::ONE_DAY * 365;
 	const SIX_MONTHS  = self::ONE_YEAR / 2;
 	const ONE_QUARTER = self::ONE_YEAR * .25;
